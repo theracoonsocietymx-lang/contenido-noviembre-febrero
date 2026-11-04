@@ -1,0 +1,15 @@
+c1 01 MAHZ68YV7oI 4:5 playera
+c1 02 MAHZ6yRZAzM 3:4 sudadera
+c1 03 MAHZ67VgOLw 1:1 medalla
+c1 04 MAHZ6wsmHME 4:5 app
+c1 05 MAHZ62BZQQQ 16:9 deportivo
+c1 06 MAHZ6yEdSZA 3:2 camioneta
+c1 07 MAHZ67Y-4aE 16:9 fachada
+c1 08 MAHZ6wFGuko 4:3 recepcion
+c1 09 MAHZ63VJwhg 2:3 poster
+c1 10 MAHZ6wDs9UE 2:1 espectacular
+c1 11 MAHZ60JmRKg 4:5 termo
+c1 12 MAHZ6-YqVdw 4:3 maleta
+c1 13 MAHZ6w4Dp5M 1:1 gorra
+c1 14 MAHZ6wmE9wo 4:5 toalla
+c1 15 MAHZ6_bDlMA 3:2 tarjeta

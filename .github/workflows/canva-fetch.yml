@@ -2,7 +2,7 @@ name: canva-fetch
 on:
   push:
     branches: [doceveinte-urban-circuit]
-    paths: ['DOCEVEiNTE/urban-circuit/urls.txt']
+    paths: ['DOCEVEiNTE/urban-circuit/urls.txt', 'DOCEVEiNTE/urban-circuit/uploads.txt']
 permissions:
   contents: write
 jobs:
@@ -19,9 +19,20 @@ jobs:
             curl -sSL --retry 3 -o "DOCEVEiNTE/urban-circuit/canva/$name" "$url" || echo "fallo $name"
             echo "$name $(stat -c %s DOCEVEiNTE/urban-circuit/canva/$name 2>/dev/null)"
           done < DOCEVEiNTE/urban-circuit/urls.txt
+      - name: Subir a Canva
+        run: |
+          D=DOCEVEiNTE/urban-circuit; mkdir -p $D/canva
+          [ -f $D/uploads.txt ] || exit 0
+          while read -r f url; do
+            [ -z "$f" ] && continue
+            out=$D/canva/up_$(basename $f).json
+            [ -f "$out" ] && continue
+            curl -sS -X POST -H "Content-Type: application/octet-stream" --data-binary "@$D/$f" "$url" -o "$out" || echo fallo
+            cat "$out"; echo
+          done < $D/uploads.txt
       - name: Guardar
         run: |
           git config user.name "canva-fetch"; git config user.email "actions@github.com"
-          git add DOCEVEiNTE/urban-circuit/canva
+          git add DOCEVEiNTE/urban-circuit/canva || true
           git commit -m "Mockups de Canva" || exit 0
           git pull --rebase && git push

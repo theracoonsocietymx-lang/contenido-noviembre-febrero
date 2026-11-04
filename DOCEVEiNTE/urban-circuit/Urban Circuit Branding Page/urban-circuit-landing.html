@@ -120,6 +120,26 @@ p{line-height:1.6;color:color-mix(in srgb,var(--w) 78%,transparent);margin:12px 
 .cd div{min-width:64px}.cd b{display:block;font-family:var(--fh);font-size:clamp(34px,6vh,58px);line-height:1;font-variant-numeric:tabular-nums}.cd span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
 .spark{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--g);opacity:0;animation:sp 3.4s ease-out infinite}
 @keyframes sp{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1)}}
+/* una sección por pantalla con snap */
+html.lp-fit{scroll-snap-type:y mandatory;scroll-behavior:auto}
+html.lp-fit .sec{height:100vh;height:100svh;min-height:0;padding:var(--navh,72px) 0 28px;display:flex;flex-direction:column;justify-content:center;scroll-snap-align:start;scroll-snap-stop:always}
+html.lp-fit .sec > .in{transform-origin:top center}
+html.lp-fit .hero{justify-content:flex-end;padding-bottom:clamp(40px,8vh,90px)}
+html.lp-fit .final{justify-content:center}
+html.lp-fit .foot{scroll-snap-align:end}
+html.lp-fit .grid3,html.lp-fit .steps{margin-top:clamp(20px,3.4vh,40px)}
+html.lp-fit .stats{margin-top:clamp(24px,4vh,46px)}
+html.lp-fit .sec-end{margin-top:clamp(20px,3.6vh,44px)}
+html.lp-fit .areas .ph{aspect-ratio:16/9}
+html.lp-fit .ph.tall{aspect-ratio:1/1}
+html.lp-fit .club .ph{aspect-ratio:auto;height:calc(100svh - var(--navh,72px) - 90px)}
+html.lp-fit .faq{margin-top:clamp(20px,3vh,36px)}
+html.lp-snapm{scroll-snap-type:y proximity}
+html.lp-snapm .sec{min-height:100svh;display:flex;flex-direction:column;justify-content:center;scroll-snap-align:start}
+.rv{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.on{opacity:1;transform:none}
+.rv:nth-child(2){transition-delay:.07s}.rv:nth-child(3){transition-delay:.14s}.rv:nth-child(4){transition-delay:.21s}.rv:nth-child(5){transition-delay:.28s}.rv:nth-child(6){transition-delay:.35s}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}}
 
 /* 01 Mármol: serif, filete verde, piedra con relieve */
 [data-s=c1] .h1,[data-s=c1] .h2{font-weight:400;letter-spacing:-.01em}
@@ -286,5 +306,17 @@ function cuenta(d){const C=2*Math.PI*54,fg=$('#fg');fg.style.strokeDasharray=C;c
     $('#cdM').textContent=String(Math.floor(r/6e4)%60).padStart(2,'0');$('#cdS').textContent=String(Math.floor(r/1e3)%60).padStart(2,'0');fg.style.strokeDashoffset=C*(1-r/tot)};f();tick=setInterval(f,1000)}
 function chispas(){const r=$('#ring');r.querySelectorAll('.spark').forEach(s=>s.remove());for(let i=0;i<22;i++){const s=document.createElement('i');s.className='spark';const a=i/22*6.283,R=110+Math.random()*80;
   s.style.cssText=`left:50%;top:50%;--dx:${Math.cos(a)*R}px;--dy:${Math.sin(a)*R}px;animation-delay:${(i%6)*.25}s;background:${i%3?'var(--g)':'var(--a1)'}`;r.appendChild(s)}}
+/* pantallas y aparición */
+(function(){const H=document.documentElement,mq=matchMedia('(min-width:821px) and (min-height:560px)');
+  const RV='.sec .in > .eb,.sec .in > .h2,.sec .in > p,.stats > *,.club > *,.grid3 > *,.steps > *,.faq > *,.sec-end,.hero .in > *';
+  const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.12}):null;
+  $$(RV).forEach(el=>{el.classList.add('rv');io?io.observe(el):el.classList.add('on')});
+  function fit(){const on=mq.matches;H.classList.toggle('lp-fit',on);H.classList.toggle('lp-snapm',!on);
+    const nv=document.querySelector('.nav');H.style.setProperty('--navh',(nv?nv.offsetHeight+18:72)+'px');
+    $$('.sec > .in').forEach(w=>{w.style.zoom='';if(!on)return;const s=w.parentNode,cs=getComputedStyle(s);
+      const av=s.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),h=w.scrollHeight;if(h>av)w.style.zoom=Math.max(.55,av/h).toFixed(3)})}
+  fit();let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(fit,120)});addEventListener('load',fit);
+  if(document.fonts)document.fonts.ready.then(fit);$$('.sw button').forEach(b=>b.addEventListener('click',()=>setTimeout(fit,60)));
+  $$('.q').forEach(d=>d.addEventListener('toggle',()=>setTimeout(fit,20)))})();
 if(location.hash==='#reserva'){ir(1);abrir('#reserva')}
 </script></body></html>

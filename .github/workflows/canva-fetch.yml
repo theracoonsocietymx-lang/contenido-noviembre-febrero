@@ -1,0 +1,27 @@
+name: canva-fetch
+on:
+  push:
+    branches: [doceveinte-urban-circuit]
+    paths: ['DOCEVEiNTE/urban-circuit/urls.txt']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar imágenes
+        run: |
+          mkdir -p DOCEVEiNTE/urban-circuit/canva
+          while read -r name url; do
+            [ -z "$name" ] && continue
+            [ -f "DOCEVEiNTE/urban-circuit/canva/$name" ] && continue
+            curl -sSL --retry 3 -o "DOCEVEiNTE/urban-circuit/canva/$name" "$url" || echo "fallo $name"
+            echo "$name $(stat -c %s DOCEVEiNTE/urban-circuit/canva/$name 2>/dev/null)"
+          done < DOCEVEiNTE/urban-circuit/urls.txt
+      - name: Guardar
+        run: |
+          git config user.name "canva-fetch"; git config user.email "actions@github.com"
+          git add DOCEVEiNTE/urban-circuit/canva
+          git commit -m "Mockups de Canva" || exit 0
+          git pull --rebase && git push

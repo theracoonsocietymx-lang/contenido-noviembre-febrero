@@ -28,7 +28,7 @@ jobs:
             out=$D/canva/up_$(basename $f).json
             [ -f "$out" ] && continue
             curl -sS -X POST -H "Content-Type: application/octet-stream" --data-binary "@$D/$f" "$url" -o "$out" || echo fallo
-            cat "$out"; echo
+            cat "$out" || true; echo
           done < $D/uploads.txt
       - name: Guardar
         run: |

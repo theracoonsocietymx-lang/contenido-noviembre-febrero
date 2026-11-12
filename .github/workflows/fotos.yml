@@ -2,7 +2,7 @@ name: bajar-fotos
 on:
   push:
     branches: [doceveinte-perritos-viajeros]
-    paths: ['fotos.json']
+    paths: ['fotos.json', '.github/workflows/fotos.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -14,18 +14,31 @@ jobs:
       - name: Descargar
         run: |
           python3 - <<'PY'
-          import json, subprocess, os
+          import json, subprocess, os, re
           d = json.load(open('fotos.json'))
           out = 'DOCEVEiNTE/perritos-viajeros/fotos'
           os.makedirs(out, exist_ok=True)
+          def sh(args):
+              return subprocess.run(['curl','-sSL','--max-time','60','-A','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36']+args,capture_output=True,text=True)
           for k, urls in d.items():
               dest = f'{out}/{k}.jpg'
+              done = False
               for u in urls:
-                  r = subprocess.run(['curl','-sSL','--max-time','60','-A','Mozilla/5.0','-o',dest,'-w','%{http_code} %{content_type}',u],capture_output=True,text=True)
+                  m = re.search(r'/photos/([^/]+)/download', u)
+                  if not m: continue
+                  pid = m.group(1)
+                  page = sh(['https://unsplash.com/photos/' + pid]).stdout
+                  og = re.search(r'property="og:image"\s+content="([^"]+)"', page) or re.search(r'content="([^"]+)"\s+property="og:image"', page)
+                  print(k, pid, 'og' if og else 'sin-og', len(page), flush=True)
+                  if not og: continue
+                  img = og.group(1).replace('&amp;', '&')
+                  img = re.sub(r'([?&])w=\d+', r'\g<1>w=1400', img)
+                  r = subprocess.run(['curl','-sSL','--max-time','60','-o',dest,'-w','%{http_code} %{content_type}',img],capture_output=True,text=True)
                   ok = r.stdout.startswith('200') and 'image' in r.stdout and os.path.getsize(dest) > 20000
-                  print(k, r.stdout, ok, flush=True)
-                  if ok: break
+                  print('  ', r.stdout, ok, flush=True)
+                  if ok: done = True; break
                   if os.path.exists(dest): os.remove(dest)
+              if not done: print(k, 'FALLO', flush=True)
           PY
       - name: Guardar
         run: |

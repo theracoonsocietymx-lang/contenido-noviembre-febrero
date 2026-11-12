@@ -1,0 +1,30 @@
+name: bajar-canva
+on:
+  push:
+    branches: [doceveinte-perritos-viajeros]
+    paths: ['canva_urls.json', '.github/workflows/canva.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  canva:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar
+        run: |
+          python3 - <<'PY'
+          import json, subprocess, os
+          d = json.load(open('canva_urls.json'))
+          out = 'DOCEVEiNTE/perritos-viajeros/fotos'
+          os.makedirs(out, exist_ok=True)
+          for k, u in d.items():
+              dest = f'{out}/{k}.jpg'
+              r = subprocess.run(['curl','-sSL','--max-time','90','-o',dest,'-w','%{http_code} %{content_type}',u],capture_output=True,text=True)
+              print(k, r.stdout, os.path.getsize(dest) if os.path.exists(dest) else 0, flush=True)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "bot"; git config user.email "bot@users.noreply.github.com"
+          git add DOCEVEiNTE/perritos-viajeros/fotos
+          git diff --cached --quiet || (git commit -m "fotos canva" && git pull --rebase origin doceveinte-perritos-viajeros && git push origin HEAD:doceveinte-perritos-viajeros)

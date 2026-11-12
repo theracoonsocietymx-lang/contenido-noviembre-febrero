@@ -1,0 +1,36 @@
+name: bajar-fotos
+on:
+  push:
+    branches: [doceveinte-perritos-viajeros]
+    paths: ['fotos.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fotos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar
+        run: |
+          python3 - <<'PY'
+          import json, subprocess, os
+          d = json.load(open('fotos.json'))
+          out = 'DOCEVEiNTE/perritos-viajeros/fotos'
+          os.makedirs(out, exist_ok=True)
+          for k, urls in d.items():
+              dest = f'{out}/{k}.jpg'
+              for u in urls:
+                  r = subprocess.run(['curl','-sSL','--max-time','60','-A','Mozilla/5.0','-o',dest,'-w','%{http_code} %{content_type}',u],capture_output=True,text=True)
+                  ok = r.stdout.startswith('200') and 'image' in r.stdout and os.path.getsize(dest) > 20000
+                  print(k, r.stdout, ok, flush=True)
+                  if ok: break
+                  if os.path.exists(dest): os.remove(dest)
+          PY
+      - name: Guardar
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add DOCEVEiNTE/perritos-viajeros/fotos
+          git commit -m "Fotos del Club de los Perritos Viajeros" || echo nada
+          git push
